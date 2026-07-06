@@ -11,6 +11,8 @@ Fahrradrouten werden bevorzugt; unsichere normale Straßen erhalten eine deutlic
 Routingstrafe. Die Ergebnisansicht zeigt Höhenprofil, OSM-Untergrundanteile,
 Radweganteil und eine Qualitätsprüfung auf interne Stichstraßen.
 
+🌐 Ausprobieren auf **https://rundwerk.netlify.app**
+
 ## Lokal starten
 
 Voraussetzung ist Node.js 18 oder neuer. Es müssen keine Pakete installiert werden.
