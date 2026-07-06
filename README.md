@@ -21,6 +21,13 @@ npm run dev
 
 Danach `http://127.0.0.1:5173` öffnen.
 
+## Netlify
+
+Das Repository enthält Netlify Functions für `/api/route` und `/api/search`.
+`netlify.toml` veröffentlicht die statischen Dateien und leitet beide API-Pfade
+serverseitig an BRouter beziehungsweise Nominatim weiter. Nach einem Push auf den
+mit Netlify verbundenen Branch ist keine weitere Build-Konfiguration nötig.
+
 ## Technik
 
 - OpenStreetMap-Kacheln als Kartenbasis
