@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f1e9" />
+    <title>Rundwerk — Radtouren, die zurückführen</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="preconnect" href="https://tile.openstreetmap.org" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Rundwerk Startseite">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14"/><path d="M8 20h24M20 8c5 5 7 10 0 24M20 8c-5 5-7 10 0 24"/></svg>
+          </span>
+          <span>rundwerk</span>
+        </a>
+        <div class="topbar-note"><span class="status-dot"></span> OSM-basiert · kostenlos</div>
+        <button class="icon-button mobile-menu" aria-label="Menü öffnen">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </header>
+
+      <main class="workspace">
+        <aside class="planner" aria-label="Tour planen">
+          <div class="planner-scroll">
+            <div class="eyebrow">Neue Rundtour</div>
+            <h1>Wo soll's<br /><em>langgehen?</em></h1>
+            <p class="intro">Sag uns, wie weit und worauf du fahren möchtest. Den Rest macht die Karte.</p>
+
+            <section class="form-section">
+              <div class="section-heading">
+                <span class="step">01</span>
+                <label for="location-search">Startpunkt</label>
+              </div>
+              <div class="search-wrap">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+                <input id="location-search" type="search" placeholder="Ort oder Adresse suchen" autocomplete="off" />
+                <button id="locate-button" class="locate-button" title="Meinen Standort verwenden" aria-label="Meinen Standort verwenden">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+                </button>
+                <div id="search-results" class="search-results" hidden></div>
+              </div>
+              <div id="location-hint" class="field-hint">Karte anklicken oder Standort verwenden</div>
+            </section>
+
+            <section class="form-section">
+              <div class="section-heading">
+                <span class="step">02</span>
+                <label for="destination-search">Ziel auf der Runde <span class="optional">optional</span></label>
+              </div>
+              <div class="search-wrap">
+                <svg viewBox="0 0 24 24"><path d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg>
+                <input id="destination-search" type="search" placeholder="Ort, Café oder Adresse" autocomplete="off" />
+                <button id="clear-destination" class="locate-button clear-button" title="Ziel entfernen" aria-label="Ziel entfernen" hidden>
+                  <svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg>
+                </button>
+                <div id="destination-results" class="search-results" hidden></div>
+              </div>
+              <div id="destination-hint" class="field-hint">Die Tour führt dorthin und wieder zum Start zurück</div>
+            </section>
+
+            <section class="form-section">
+              <div class="section-heading">
+                <span class="step">03</span>
+                <label for="distance">Ungefähre Distanz</label>
+              </div>
+              <div class="distance-readout"><strong id="distance-value">45</strong><span>km</span></div>
+              <input id="distance" class="range" type="range" min="10" max="150" step="5" value="45" />
+              <div class="range-labels"><span>10 km</span><span>150 km</span></div>
+            </section>
+
+            <section class="form-section">
+              <div class="section-heading">
+                <span class="step">04</span>
+                <span>Untergrund</span>
+              </div>
+              <div class="surface-grid" role="radiogroup" aria-label="Untergrund wählen">
+                <button class="surface-option" data-profile="trekking" role="radio" aria-checked="false">
+                  <span class="surface-icon road"><i></i><i></i><i></i></span>
+                  <strong>Asphalt</strong><small>Schnell & glatt</small>
+                </button>
+                <button class="surface-option active" data-profile="trekking" role="radio" aria-checked="true">
+                  <span class="surface-icon mixed"><i></i><i></i><i></i></span>
+                  <strong>Gemischt</strong><small>Von allem etwas</small>
+                </button>
+                <button class="surface-option" data-profile="gravel" role="radio" aria-checked="false">
+                  <span class="surface-icon gravel"><i></i><i></i><i></i></span>
+                  <strong>Gravel</strong><small>Schotter & Wege</small>
+                </button>
+                <button class="surface-option" data-profile="mtb" role="radio" aria-checked="false">
+                  <span class="surface-icon trail"><i></i><i></i><i></i></span>
+                  <strong>Trail</strong><small>Wald & Gelände</small>
+                </button>
+              </div>
+            </section>
+
+            <section class="form-section">
+              <div class="section-heading split-heading">
+                <span><span class="step">05</span> Gewünschte Höhenmeter <span class="optional">optional</span></span>
+                <label class="switch">
+                  <input id="elevation-toggle" type="checkbox" />
+                  <span></span>
+                </label>
+              </div>
+              <div id="elevation-control" class="elevation-control disabled">
+                <div class="elevation-input">
+                  <input id="elevation-target" type="number" min="0" max="4000" step="50" value="500" disabled />
+                  <span>hm</span>
+                </div>
+                <div class="field-hint">Wir suchen eine möglichst passende Variante</div>
+              </div>
+            </section>
+          </div>
+
+          <div class="planner-action">
+            <button id="generate-button" class="primary-button">
+              <span>Rundtour erstellen</span>
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></svg>
+            </button>
+          </div>
+        </aside>
+
+        <section class="map-panel">
+          <div id="map" aria-label="Interaktive Karte"></div>
+          <div class="map-tip"><span>↕</span> Punkte ziehen, um die Route zu ändern</div>
+
+          <div id="empty-state" class="empty-state">
+            <div class="eyebrow">Bereit, wenn du es bist</div>
+            <h2>Plane deine erste Runde</h2>
+            <p>Start, Distanz und Untergrund wählen.<br />Rundwerk sucht den Rest.</p>
+          </div>
+
+          <div id="loading-state" class="loading-state" hidden>
+            <div class="spinner"></div>
+            <strong>Wir suchen schöne Wege …</strong>
+            <span>Das kann einen Moment dauern.</span>
+          </div>
+
+          <article id="route-card" class="route-card" hidden>
+            <div class="route-card-top">
+              <div>
+                <div class="eyebrow">Deine Rundtour</div>
+                <h2 id="route-title">Feierabendrunde</h2>
+              </div>
+              <button id="close-route" class="icon-button" aria-label="Tourkarte schließen">
+                <svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
+              </button>
+            </div>
+            <div class="route-stats">
+              <div><strong id="actual-distance">—</strong><span>Kilometer</span></div>
+              <div><strong id="ascent">—</strong><span>Höhenmeter</span></div>
+              <div><strong id="duration">—</strong><span>Fahrzeit</span></div>
+            </div>
+            <div class="route-details">
+              <section class="elevation-profile">
+                <div class="detail-title"><span>Höhenprofil</span><small id="elevation-range">—</small></div>
+                <svg id="elevation-chart" viewBox="0 0 520 105" preserveAspectRatio="none" aria-label="Höhenprofil der Route">
+                  <defs>
+                    <linearGradient id="elevation-fill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#e97655" stop-opacity=".35"/>
+                      <stop offset="1" stop-color="#e97655" stop-opacity=".03"/>
+                    </linearGradient>
+                  </defs>
+                  <path id="elevation-area" class="elevation-area"></path>
+                  <path id="elevation-line" class="elevation-line"></path>
+                </svg>
+                <div class="profile-axis"><span>Start</span><span id="profile-half">— km</span><span id="profile-end">— km</span></div>
+              </section>
+              <section class="surface-details">
+                <div class="detail-title"><span>Untergrund laut OSM</span><small id="surface-known">—</small></div>
+                <div id="surface-bars" class="surface-bars"></div>
+                <div id="bike-infra" class="bike-infra"></div>
+              </section>
+              <div id="route-quality" class="route-quality"></div>
+            </div>
+            <div class="route-actions">
+              <button id="reroute-button" class="secondary-button">
+                <svg viewBox="0 0 24 24"><path d="M20 7h-7a5 5 0 0 0-5 5v0a5 5 0 0 0 5 5h7M17 4l3 3-3 3"/></svg>
+                Neue Variante
+              </button>
+              <button id="export-button" class="primary-button small">
+                <svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+                GPX exportieren
+              </button>
+            </div>
+          </article>
+
+          <div class="attribution">© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> · Routing: BRouter</div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
